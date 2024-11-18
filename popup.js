@@ -1,50 +1,52 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const volumeControls = document.getElementById("volumeControls");
+// Function to check which tabs are currently making sound
+function updateTabList() {
+    // Query all tabs
+    chrome.tabs.query({}, function(tabs) {
+      const volumeControls = document.getElementById('volumeControls');
+      volumeControls.innerHTML = ''; // Clear existing content
   
-    // Fetch all tabs
-    chrome.tabs.query({}, (tabs) => {
-      volumeControls.innerHTML = ""; // Clear loading text
+      // Loop through the tabs and check if they are audible
+      tabs.forEach(function(tab) {
+        if (tab.audible) { // Only show tabs making sound
+          // Create a container for each tab's volume control
+          const tabDiv = document.createElement('div');
+          tabDiv.classList.add('tab');
+          
+          // Add the tab title (if available)
+          const tabTitle = document.createElement('span');
+          tabTitle.textContent = tab.title || 'Untitled Tab';
+          tabDiv.appendChild(tabTitle);
   
-      tabs.forEach((tab) => {
-        if (tab.url) {
-          const tabContainer = document.createElement("div");
-          tabContainer.style.marginBottom = "10px";
-  
-          const tabLabel = document.createElement("span");
-          tabLabel.textContent = tab.title.slice(0, 20) + "...";
-          tabLabel.style.display = "block";
-  
-          const volumeSlider = document.createElement("input");
-          volumeSlider.type = "range";
+          // Create a range input (slider) for volume control
+          const volumeSlider = document.createElement('input');
+          volumeSlider.type = 'range';
           volumeSlider.min = 0;
-          volumeSlider.max = 100;
+          volumeSlider.max = 1;
+          volumeSlider.step = 0.01;
+          volumeSlider.value = 0.5; // Default volume
   
-          // Load saved volume or set to default (100)
-          chrome.storage.local.get([`volume_${tab.id}`], (result) => {
-            volumeSlider.value = result[`volume_${tab.id}`] || 100;
+          // Add event listener to adjust volume on slider change
+          volumeSlider.addEventListener('input', function() {
+            chrome.tabs.update(tab.id, { muted: volumeSlider.value == 0 });
           });
   
-          // Change volume and save the setting
-          volumeSlider.addEventListener("input", (event) => {
-            const newVolume = event.target.value;
-            chrome.storage.local.set({ [`volume_${tab.id}`]: newVolume });
+          // Append the slider to the tab container
+          tabDiv.appendChild(volumeSlider);
   
-            // Change volume using content script
-            chrome.scripting.executeScript({
-              target: { tabId: tab.id },
-              func: (volume) => {
-                const audios = document.querySelectorAll("audio, video");
-                audios.forEach((audio) => (audio.volume = volume / 100));
-              },
-              args: [newVolume],
-            });
-          });
-  
-          tabContainer.appendChild(tabLabel);
-          tabContainer.appendChild(volumeSlider);
-          volumeControls.appendChild(tabContainer);
+          // Append this tab's container to the popup
+          volumeControls.appendChild(tabDiv);
         }
       });
+    });
+  }
+  
+  // Listen for when the popup is opened
+  document.addEventListener('DOMContentLoaded', function() {
+    updateTabList(); // Initial call to populate the tab list
+  
+    // Recheck tab list whenever there is a change (e.g., tab is muted/unmuted)
+    chrome.tabs.onUpdated.addListener(function() {
+      updateTabList();
     });
   });
   

@@ -3,42 +3,41 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-  }
-  
-  /* Body Styling */
-  body {
+}
+
+/* Body Styling */
+body {
     font-family: Arial, sans-serif;
     background: #f9f9f9;
     color: #333;
-    width: 300px; /* Ensures a minimum width */
-    min-width: 300px; /* Prevents shrinking */
-    min-height: 400px;
+    width: 300px; /* Fixed width */
+    min-width: 300px;
+    padding: 15px;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    padding: 15px;
-    overflow: hidden;
-  }
-  
-  /* Header Styling */
-  h1 {
+}
+
+/* Header Styling */
+h1 {
     font-size: 18px;
     color: #444;
     margin-bottom: 15px;
     text-align: center;
     word-wrap: break-word;
-  }
-  
-  /* Volume Controls Container */
-  #volumeControls {
+}
+
+/* Volume Controls Container */
+#volumeControls {
     width: 100%;
     overflow-y: auto;
-    max-height: 300px;
-  }
-  
-  /* Tab Container */
-  #volumeControls > div {
+    max-height: 300px; /* Allow scroll if there are more than 4 tabs */
+}
+
+/* Tab Container */
+#volumeControls > div {
     display: flex;
     flex-direction: column;
     margin-bottom: 15px;
@@ -47,20 +46,20 @@
     border-radius: 8px;
     background: #fff;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Tab Title */
-  #volumeControls span {
+}
+
+/* Tab Title */
+#volumeControls span {
     font-size: 14px;
     color: #666;
     margin-bottom: 8px;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
-  }
-  
-  /* Volume Slider */
-  input[type="range"] {
+}
+
+/* Volume Slider */
+input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
@@ -68,9 +67,9 @@
     background: #ddd;
     outline: none;
     border-radius: 5px;
-  }
-  
-  input[type="range"]::-webkit-slider-thumb {
+}
+
+input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 12px;
@@ -79,24 +78,15 @@
     background: #4caf50;
     cursor: pointer;
     box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
-  }
-  
-  input[type="range"]::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #4caf50;
-    cursor: pointer;
-  }
-  
-  input[type="range"]:hover::-webkit-slider-thumb {
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
     background: #45a049;
-  }
-  
-  /* Responsive Adjustments */
-  @media (max-width: 300px) {
+}
+
+/* Responsive Adjustments */
+@media (max-width: 300px) {
     body {
-      width: 100%; /* Allow for flexible width on small screens */
+        width: 100%; /* Allow for flexible width on small screens */
     }
-  }
-  
+}
