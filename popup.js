@@ -1,68 +1,67 @@
-// Function to check which tabs are currently making sound
-function updateTabList() {
-  // Query all tabs
-  chrome.tabs.query({}, function(tabs) {
-    const volumeControls = document.getElementById('volumeControls');
-    volumeControls.innerHTML = ''; // Clear existing content
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("Popup Loaded");
+  console.log("Chrome Storage API:", chrome.storage); // Debug log
+  console.log("Chrome Storage Local:", chrome.storage.local); // Debug log
 
-    // Filter for audible tabs
-    const audibleTabs = tabs.filter(tab => tab.audible);
+  const volumeControls = document.getElementById("volumeControls");
 
-    // Limit to 4 tabs for display if there are more
-    const tabsToShow = audibleTabs.slice(0, 4);
+  chrome.tabs.query({}, (tabs) => {
+    console.log("Tabs Retrieved:", tabs); // Debug log
+    volumeControls.innerHTML = ""; // Clear loading text
 
-    tabsToShow.forEach(function(tab) {
-      // Create a container for each tab's volume control
-      const tabDiv = document.createElement('div');
-      tabDiv.classList.add('tab');
+    tabs.forEach((tab) => {
+      if (tab.url && tab.audible) {
+        const tabContainer = document.createElement("div");
+        tabContainer.style.marginBottom = "10px";
 
-      // Add the tab title (if available)
-      const tabTitle = document.createElement('span');
-      tabTitle.textContent = tab.title || 'Untitled Tab';
-      tabDiv.appendChild(tabTitle);
+        const tabLabel = document.createElement("span");
+        tabLabel.textContent = tab.title.slice(0, 20) + "...";
+        tabLabel.style.display = "block";
 
-      // Create a range input (slider) for volume control
-      const volumeSlider = document.createElement('input');
-      volumeSlider.type = 'range';
-      volumeSlider.min = 0;
-      volumeSlider.max = 1;
-      volumeSlider.step = 0.01;
-      volumeSlider.value = tab.muted ? 0 : 1; // Set initial value based on muted state
+        const volumeSlider = document.createElement("input");
+        volumeSlider.type = "range";
+        volumeSlider.min = 0;
+        volumeSlider.max = 100;
 
-      // Add event listener to adjust mute state on slider change
-      volumeSlider.addEventListener('input', function() {
-        const isMuted = volumeSlider.value == 0;
-        chrome.tabs.update(tab.id, { muted: isMuted }, function() {
-          if (chrome.runtime.lastError) {
-            console.error(`Error updating tab ${tab.id}: ${chrome.runtime.lastError.message}`);
+        console.log(`Loading volume for Tab ID: ${tab.id}`); // Debug log
+        if (chrome.storage && chrome.storage.local) {
+          chrome.storage.local.get(`volume_${tab.id}`, (result) => {
+            if (chrome.runtime.lastError) {
+              console.error("Storage error:", chrome.runtime.lastError);
+              volumeSlider.value = 100; // Default to 100
+            } else {
+              console.log(`Volume for Tab ${tab.id}:`, result);
+              volumeSlider.value = result[`volume_${tab.id}`] || 100;
+            }
+          });
+        } else {
+          console.error("Storage API is not accessible!");
+        }
+
+        volumeSlider.addEventListener("input", (event) => {
+          const newVolume = event.target.value;
+          if (chrome.storage && chrome.storage.local) {
+            chrome.storage.local.set({ [`volume_${tab.id}`]: newVolume }, () => {
+              if (chrome.runtime.lastError) {
+                console.error("Error saving volume for tab", tab.id, chrome.runtime.lastError);
+              }
+            });
           }
+
+          chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func: (volume) => {
+              const audios = document.querySelectorAll("audio, video");
+              audios.forEach((audio) => (audio.volume = volume / 100));
+            },
+            args: [newVolume],
+          });
         });
-      });
 
-      // Append the slider to the tab container
-      tabDiv.appendChild(volumeSlider);
-
-      // Append this tab's container to the popup
-      volumeControls.appendChild(tabDiv);
+        tabContainer.appendChild(tabLabel);
+        tabContainer.appendChild(volumeSlider);
+        volumeControls.appendChild(tabContainer);
+      }
     });
-
-    // Show scrollbar if there are more than 4 audible tabs
-    if (audibleTabs.length > 4) {
-      volumeControls.style.maxHeight = '300px';
-      volumeControls.style.overflowY = 'auto';
-    } else {
-      volumeControls.style.maxHeight = 'none';
-      volumeControls.style.overflowY = 'hidden';
-    }
-  });
-}
-
-// Listen for when the popup is opened
-document.addEventListener('DOMContentLoaded', function() {
-  updateTabList(); // Initial call to populate the tab list
-
-  // Recheck tab list whenever there is a change (e.g., tab is muted/unmuted)
-  chrome.tabs.onUpdated.addListener(function() {
-    updateTabList();
   });
 });

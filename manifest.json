@@ -1,12 +1,12 @@
 {
-    "manifest_version": 3,
-    "name": "TabAmp",
-    "version": "0.2",
-    "description": "Control the volume of each tab individually.",
-    "permissions": ["tabs", "storage", "activeTab", "scripting"],
-    "host_permissions": ["<all_urls>"],
-    "action": {
-      "default_popup": "popup.html"
-    }
+  "manifest_version": 3,
+  "name": "Tab Volume Controller",
+  "version": "1.0",
+  "description": "Control the volume of each tab individually.",
+  "permissions": ["tabs", "storage", "activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html"
+
   }
-  
+}
