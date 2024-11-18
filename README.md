@@ -7,5 +7,5 @@ Seperately, Efficiently
 
 ## Screenshots
 
-![App Screenshot](<assets\images\image.png>)
+![App Screenshot](https://github.com/alok-k-mishra/TabAmp/blob/main/assets/images/image.png)
 
